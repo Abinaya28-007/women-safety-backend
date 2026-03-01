@@ -1,33 +1,51 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # IMPORTANT for Netlify frontend
+CORS(app)  # Enable CORS
 
-@app.route("/")
+# Test route (VERY IMPORTANT)
+@app.route('/')
 def home():
     return "Backend is running successfully!"
 
-@app.route("/sos", methods=["POST"])
-def sos():
-    try:
-        data = request.json
-        location = data.get("location", "Unknown location")
+# Risk Prediction API
+@app.route('/predict-risk', methods=['POST'])
+def predict_risk():
+    data = request.get_json()
 
-        print("🚨 SOS Triggered from:", location)
+    lat = float(data.get('latitude'))
+    lon = float(data.get('longitude'))
+    hour = data.get('hour')
+    day = data.get('day')
 
-        return jsonify({
-            "status": "success",
-            "message": "SOS Triggered Successfully",
-            "location": location
-        })
+    # Simple demo logic
+    if lat > 13.1:
+        risk_level = "High"
+    elif lon > 80.3:
+        risk_level = "Medium"
+    else:
+        risk_level = "Low"
 
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+    return jsonify({"risk_level": risk_level})
 
+# SOS Alert API
+@app.route('/send-alert', methods=['POST'])
+def send_alert():
+    data = request.get_json()
+
+    lat = data.get('latitude')
+    lon = data.get('longitude')
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    print(f"SOS Alert! Location: {lat}, {lon} at {timestamp}")
+
+    return jsonify({
+        "status": "success",
+        "message": "SOS alert received"
+    })
 
 if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
     app.run(debug=True)

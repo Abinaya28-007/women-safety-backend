@@ -1,0 +1,6 @@
+latitude,longitude,hour,day,crime_type,severity
+13.0827,80.2707,22,5,harassment,High
+13.0358,80.2445,14,2,theft,Medium
+13.0674,80.2376,18,6,assault,High
+13.0455,80.2500,9,1,harassment,Low
+13.0800,80.2600,20,4,robbery,Medium

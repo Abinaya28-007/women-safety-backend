@@ -3,49 +3,56 @@ from flask_cors import CORS
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)  # Allow frontend calls from any domain
 
-# Test route (VERY IMPORTANT)
-@app.route('/')
+@app.route("/")
 def home():
     return "Backend is running successfully!"
 
-# Risk Prediction API
-@app.route('/predict-risk', methods=['POST'])
+# Dummy AI Risk Predictor
+@app.route("/predict-risk", methods=["POST"])
 def predict_risk():
-    data = request.get_json()
+    try:
+        data = request.get_json()
+        lat = float(data.get("latitude", 0))
+        lon = float(data.get("longitude", 0))
+        hour = int(data.get("hour", 12))
+        day = int(data.get("day", 1))
 
-    lat = float(data.get('latitude'))
-    lon = float(data.get('longitude'))
-    hour = data.get('hour')
-    day = data.get('day')
+        # Simple logic for demonstration
+        if lat > 13.1:
+            risk_level = "High"
+        elif lon > 80.3:
+            risk_level = "Medium"
+        else:
+            risk_level = "Low"
 
-    # Simple demo logic
-    if lat > 13.1:
-        risk_level = "High"
-    elif lon > 80.3:
-        risk_level = "Medium"
-    else:
-        risk_level = "Low"
+        return jsonify({"risk_level": risk_level})
 
-    return jsonify({"risk_level": risk_level})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-# SOS Alert API
-@app.route('/send-alert', methods=['POST'])
-def send_alert():
-    data = request.get_json()
+# SOS Alert
+@app.route("/sos", methods=["POST"])
+def sos():
+    try:
+        data = request.get_json()
+        lat = data.get("latitude", "Unknown")
+        lon = data.get("longitude", "Unknown")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"🚨 SOS Alert! Location: {lat}, {lon} at {timestamp}")
 
-    lat = data.get('latitude')
-    lon = data.get('longitude')
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return jsonify({
+            "status": "success",
+            "message": "SOS Triggered Successfully",
+            "latitude": lat,
+            "longitude": lon,
+            "time": timestamp
+        })
 
-    print(f"SOS Alert! Location: {lat}, {lon} at {timestamp}")
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-    return jsonify({
-        "status": "success",
-        "message": "SOS alert received"
-    })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
     app.run(debug=True)
